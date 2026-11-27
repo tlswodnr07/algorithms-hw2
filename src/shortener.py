@@ -1,19 +1,26 @@
 """In-memory URL shortener backed by the project's hash table."""
 
+from typing import Callable
 from urllib.parse import urlsplit
 
 if __package__:
     from .base62 import encode
     from .hash_table import HashTable
+    from .linear_probe_hash_table import LinearProbeHashTable
 else:
     from base62 import encode
     from hash_table import HashTable
+    from linear_probe_hash_table import LinearProbeHashTable
+
+
+_Table = HashTable[str] | LinearProbeHashTable[str]
+_TableFactory = Callable[[], _Table]
 
 
 class Shortener:
-    def __init__(self):
-        self._url_to_code: HashTable[str] = HashTable()
-        self._code_to_url: HashTable[str] = HashTable()
+    def __init__(self, table_factory: _TableFactory = HashTable):
+        self._url_to_code = table_factory()
+        self._code_to_url = table_factory()
         self._next_id = 0
 
     def shorten(self, url: str) -> str:

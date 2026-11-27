@@ -7,8 +7,10 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlsplit
 
 if __package__:
+    from .linear_probe_hash_table import LinearProbeHashTable
     from .shortener import Shortener
 else:
+    from linear_probe_hash_table import LinearProbeHashTable
     from shortener import Shortener
 
 
@@ -32,28 +34,34 @@ def _form() -> str:
 def _table_page(shortener: Shortener) -> str:
     table = shortener._url_to_code
     rows = []
-    for index, head in enumerate(table.buckets):
+    for index in range(table.capacity):
         chain = []
-        node = head
-        while node is not None:
-            trace = table.hash_trace(node.key)
+        for key, code in table.bucket_entries(index):
+            trace = table.hash_trace(key)
             steps = " → ".join(
                 f"({value_before}×31+ord({character!r})) mod {table.capacity}={value_after}"
                 for (character, value_after), value_before in zip(
                     trace, [0] + [value for _, value in trace[:-1]]
                 )
             ) or "empty key → 0"
+            if isinstance(table, LinearProbeHashTable):
+                probes = " → ".join(str(position) for position in table.probe_trace(key))
+                placement = f"linear probe path: {probes}"
+            else:
+                placement = f"bucket {index}"
             chain.append(
-                f"<li><code>{html.escape(node.key)}</code> → "
-                f"<code>{html.escape(node.value)}</code>; bucket {index}; "
+                f"<li><code>{html.escape(key)}</code> → "
+                f"<code>{html.escape(code)}</code>; {html.escape(placement)}; "
                 f"Horner: {html.escape(steps)}</li>"
             )
-            node = node.next
+        if not chain:
+            chain.append("<li><em>empty</em></li>")
         rows.append(
             f"<tr><th>{index}</th><td><ul>{''.join(chain)}</ul></td></tr>"
         )
     return (
-        "<p>Horner recurrence: h = (31 × h + ord(character)) mod capacity.</p>"
+        "<p>Horner recurrence: h = (31 × h + ord(character)) mod capacity. "
+        "Linear probing scans the next slot, wrapping at the final slot.</p>"
         "<table><thead><tr><th>Bucket</th><th>Collision chain and calculation</th>"
         f"</tr></thead><tbody>{''.join(rows)}</tbody></table><p><a href='/'>Home</a></p>"
     )

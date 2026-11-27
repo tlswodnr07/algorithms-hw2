@@ -5,7 +5,8 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
-from src.server import create_handler
+from src.linear_probe_hash_table import LinearProbeHashTable
+from src.server import _table_page, create_handler
 from src.shortener import Shortener
 
 
@@ -61,6 +62,13 @@ class ServerTests(unittest.TestCase):
         with self.assertRaises(HTTPError) as error:
             urlopen(self.base_url + "/not-found")
         self.assertEqual(error.exception.code, 404)
+
+    def test_table_page_shows_linear_probe_path(self):
+        shortener = Shortener(LinearProbeHashTable)
+        shortener.shorten("https://example.com/a")
+        page = _table_page(shortener)
+        self.assertIn("linear probe path", page)
+        self.assertIn("Horner:", page)
 
 
 if __name__ == "__main__":

@@ -16,11 +16,11 @@
 ## 3. 해시 테이블
 
 기본 `HashTable`은 연결 리스트 체이닝을 사용한다. 키의 각 유니코드 코드 포인트를 순서대로 Horner 방식으로 누적하고 테이블 크기로 나머지 연산해 버킷을 고른다. 초기 용량은 8이고 항목 수/용량이 0.75를 넘으면 용량을 두 배로 늘려 재배치한다.
-테이블은 문자열 키를 지원하며 `table[key]`, `table[key] = value`, `key in table`, `len(table)`, `get(key, default)` 인터페이스를 제공한다. 없는 키 조회는 `KeyError`다. `dict`, `set`, 내장 `hash()`는 사용하지 않는다. 선형 탐지 방식은 비교 실험의 별도 테이블로 추가한다.
+`LinearProbeHashTable`은 같은 Horner 해시와 선형 탐지를 사용하며 마지막 칸 다음에는 0번 칸으로 순환한다. 두 방식 모두 문자열 키에 `table[key]`, 대입, `key in table`, `len(table)`, `get(key, default)` 인터페이스를 제공하고 기본 적재율 0.75 초과 시 크기를 두 배로 늘린다. `max_load_factor=None`은 고정 용량 실험 모드이며 선형 탐지 테이블이 가득 찬 상태에서 새 키를 넣으면 `OverflowError`다. 없는 키 조회는 `KeyError`다. `dict`, `set`, 내장 `hash()`는 사용하지 않는다.
 
 ## 4. 단축기
 
-`Shortener.shorten(url)`은 절대 HTTP/HTTPS URL(호스트 이름 포함)을 받아 문자열 코드를 반환한다. 같은 URL을 다시 넣으면 같은 코드를 반환한다. 유효하지 않은 URL에는 `ValueError`를 낸다.
+`Shortener.shorten(url)`은 절대 HTTP/HTTPS URL(호스트 이름 포함)을 받아 문자열 코드를 반환한다. 같은 URL을 다시 넣으면 같은 코드를 반환한다. 유효하지 않은 URL에는 `ValueError`를 낸다. 생성자의 `table_factory`로 체이닝과 선형 탐지 중 구현을 선택할 수 있다.
 `Shortener.expand(code)`는 원래 URL을 반환한다. 등록되지 않은 코드는 `KeyError`다. 코드는 순차 정수의 base62 인코딩이며 URL 내용이나 해시값으로부터 만들지 않는다.
 
 ## 5. 웹 서버
@@ -34,3 +34,4 @@
 - 단축기: URL 검증, 같은 URL 중복, 여러 URL의 고유 코드, 왕복 확장, 없는 코드
 - 서버: 폼과 성공 응답, 잘못된 입력, 알 수 없는 코드와 테이블 화면
 - 실험: 알려진 성공/실패 탐색 횟수, 래핑(끝 칸에서 0번 칸으로), 가득 찬 선형 탐지 테이블
+- 비교 실험: 같은 키 집합/용량에서 α=0.1~0.9의 성공·실패 탐색 비용과 이론값을 비교하고 SVG/PDF를 생성
