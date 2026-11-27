@@ -41,6 +41,16 @@ class HashTable(Generic[_Value]):
             value = (value * 31 + ord(character)) % modulus
         return value
 
+    def hash_trace(self, key: str) -> list[tuple[str, int]]:
+        if not isinstance(key, str):
+            raise TypeError("keys must be strings")
+        value = 0
+        trace = []
+        for character in key:
+            value = (value * 31 + ord(character)) % self.capacity
+            trace.append((character, value))
+        return trace
+
     def __len__(self) -> int:
         return self._size
 

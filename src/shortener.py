@@ -2,8 +2,12 @@
 
 from urllib.parse import urlsplit
 
-from src.base62 import encode
-from src.hash_table import HashTable
+if __package__:
+    from .base62 import encode
+    from .hash_table import HashTable
+else:
+    from base62 import encode
+    from hash_table import HashTable
 
 
 class Shortener:
