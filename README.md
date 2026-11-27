@@ -19,13 +19,14 @@
 
 | 파일 | 하는 일 |
 | --- | --- |
-| `SPEC.md` | 명세 틀. 에이전트가 초안을 쓰고 **본인이 고칩니다** |
-| `src/` · `tests/` · `experiments/` | 비어 있습니다. 수업에서 채웁니다 |
+| `SPEC.md` | 인코딩, 해시 테이블, 단축기 및 경계 사례 명세 |
+| `src/` | base62, 체이닝/선형 탐지 해시 테이블, 단축기, HTTP 서버 |
+| `tests/` | 인코딩, 자료구조, 서비스와 실험 회귀 테스트 |
+| `experiments/` | 적재율 실험, 비교 SVG 그래프, PDF 보고서 |
 | `tools/catchup.sh` | 수업 중 놓친 단계를 따라잡는 스크립트 |
 | `Makefile` | `make test` · `make serve` · `make experiment` |
 
-정답 코드는 들어 있지 않습니다. 에이전트는 작업 공간의 파일을 읽으므로, 정답이
-옆에 있으면 그대로 베껴 와서 연습이 되지 않습니다.
+해시 테이블은 내장 `dict`, `set`, `hash()` 없이 직접 구현합니다.
 
 ## 명령
 
@@ -35,7 +36,7 @@
 | --- | --- |
 | 테스트 | `make test` |
 | 웹 서버 (포트 8000) | `make serve` |
-| 충돌 실험 | `make experiment` |
+| 충돌 비교 실험 (표, SVG, PDF) | `make experiment` |
 | 놓친 단계 따라잡기 | `sh tools/catchup.sh <단계 번호>` |
 
 외부 라이브러리는 쓰지 않습니다. Python 표준 모듈만으로 충분합니다.
