@@ -22,7 +22,7 @@
 | `SPEC.md` | 인코딩, 해시 테이블, 단축기 및 경계 사례 명세 |
 | `src/` | base62, 체이닝/선형 탐지 해시 테이블, 단축기, HTTP 서버 |
 | `tests/` | 인코딩, 자료구조, 서비스와 실험 회귀 테스트 |
-| `experiments/` | 적재율 실험, 비교 SVG 그래프, PDF 보고서 |
+| `experiments/` | 적재율 실험, 비교 CSV/SVG 그래프, PDF 보고서 |
 | `tools/catchup.sh` | 수업 중 놓친 단계를 따라잡는 스크립트 |
 | `Makefile` | `make test` · `make serve` · `make experiment` |
 
@@ -36,7 +36,7 @@
 | --- | --- |
 | 테스트 | `make test` |
 | 웹 서버 (포트 8000) | `make serve` |
-| 충돌 비교 실험 (표, SVG, PDF) | `make experiment` |
+| 충돌 비교 실험 (표, CSV, SVG, PDF) | `make experiment` |
 | 놓친 단계 따라잡기 | `sh tools/catchup.sh <단계 번호>` |
 
 `make serve`로 서버를 실행한 뒤 `/table`을 열면, 등록된 URL의 체이닝 및 선형 탐지 테이블을 함께 확인할 수 있습니다.
