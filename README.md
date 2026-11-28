@@ -39,6 +39,8 @@
 | 충돌 비교 실험 (표, SVG, PDF) | `make experiment` |
 | 놓친 단계 따라잡기 | `sh tools/catchup.sh <단계 번호>` |
 
+`make serve`로 서버를 실행한 뒤 `/table`을 열면, 등록된 URL의 체이닝 및 선형 탐지 테이블을 함께 확인할 수 있습니다.
+
 외부 라이브러리는 쓰지 않습니다. Python 표준 모듈만으로 충분합니다.
 
 ## 로컬에서 하기

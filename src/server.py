@@ -7,9 +7,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlsplit
 
 if __package__:
+    from .hash_table import HashTable
     from .linear_probe_hash_table import LinearProbeHashTable
     from .shortener import Shortener
 else:
+    from hash_table import HashTable
     from linear_probe_hash_table import LinearProbeHashTable
     from shortener import Shortener
 
@@ -31,11 +33,12 @@ def _form() -> str:
     )
 
 
-def _table_page(shortener: Shortener) -> str:
-    table = shortener._url_to_code
+def _render_table(
+    table: HashTable[str] | LinearProbeHashTable[str], title: str
+) -> str:
     rows = []
     for index in range(table.capacity):
-        chain = []
+        entries = []
         for key, code in table.bucket_entries(index):
             trace = table.hash_trace(key)
             steps = " → ".join(
@@ -44,30 +47,40 @@ def _table_page(shortener: Shortener) -> str:
                     trace, [0] + [value for _, value in trace[:-1]]
                 )
             ) or "empty key → 0"
-            if isinstance(table, LinearProbeHashTable):
-                probes = " → ".join(str(position) for position in table.probe_trace(key))
-                placement = f"linear probe path: {probes}"
-            else:
-                placement = f"bucket {index}"
-            chain.append(
+            probes = table.probe_trace(key)
+            visited_slots = " → ".join(str(position) for position in probes) or "none"
+            final_slot = probes[-1] if probes else index
+            entries.append(
                 f"<li><code>{html.escape(key)}</code> → "
-                f"<code>{html.escape(code)}</code>; {html.escape(placement)}; "
+                f"<code>{html.escape(code)}</code><br>"
+                f"Initial hash slot: {table._hash(key)}; "
+                f"Visited slots: {html.escape(visited_slots)}; "
+                f"Final storage slot: {final_slot}<br>"
                 f"Horner: {html.escape(steps)}</li>"
             )
-        if not chain:
-            chain.append("<li><em>empty</em></li>")
+        if not entries:
+            entries.append("<li><em>empty</em></li>")
         rows.append(
-            f"<tr><th>{index}</th><td><ul>{''.join(chain)}</ul></td></tr>"
+            f"<tr><th>{index}</th><td><ul>{''.join(entries)}</ul></td></tr>"
         )
     return (
-        "<p>Horner recurrence: h = (31 × h + ord(character)) mod capacity. "
-        "Linear probing scans the next slot, wrapping at the final slot.</p>"
-        "<table><thead><tr><th>Bucket</th><th>Collision chain and calculation</th>"
+        f"<h2>{html.escape(title)}</h2>"
+        "<p>Horner recurrence: h = (31 × h + ord(character)) mod capacity.</p>"
+        "<table><thead><tr><th>Slot</th><th>Stored URLs and hash/probe details</th>"
         f"</tr></thead><tbody>{''.join(rows)}</tbody></table><p><a href='/'>Home</a></p>"
     )
 
 
-def create_handler(shortener: Shortener):
+def _table_page(shortener: Shortener, linear_shortener: Shortener) -> str:
+    return (
+        "<p>Both tables contain the same submitted URLs. Linear probing scans the "
+        "next slot and wraps at the final slot.</p>"
+        f"{_render_table(shortener._url_to_code, 'Separate chaining')}"
+        f"{_render_table(linear_shortener._url_to_code, 'Linear probing')}"
+    )
+
+
+def create_handler(shortener: Shortener, linear_shortener: Shortener):
     class ShortenerHandler(BaseHTTPRequestHandler):
         def _send(self, status: int, body: str, content_type: str = "text/html; charset=utf-8"):
             encoded = body.encode("utf-8")
@@ -83,7 +96,10 @@ def create_handler(shortener: Shortener):
                 self._send(200, _page(_form()))
                 return
             if path == "/table":
-                self._send(200, _page(_table_page(shortener), "Hash table"))
+                self._send(
+                    200,
+                    _page(_table_page(shortener, linear_shortener), "Hash tables"),
+                )
                 return
 
             code = path.removeprefix("/")
@@ -121,6 +137,7 @@ def create_handler(shortener: Shortener):
             submitted_url = form.get("url", [""])[0]
             try:
                 code = shortener.shorten(submitted_url)
+                linear_shortener.shorten(submitted_url)
             except ValueError as error:
                 message = html.escape(str(error))
                 self._send(400, _page(f"<p>{message}</p>{_form()}", "Invalid URL"))
@@ -142,7 +159,10 @@ def main():
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("--port must be between 1 and 65535")
-    server = HTTPServer(("", args.port), create_handler(Shortener()))
+    server = HTTPServer(
+        ("", args.port),
+        create_handler(Shortener(), Shortener(LinearProbeHashTable)),
+    )
     print(f"Serving on port {args.port}")
     try:
         server.serve_forever()
