@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Compare separate chaining and linear probing on identical key sets."""
 
+import csv
 from pathlib import Path
 from random import Random
 
@@ -12,6 +13,18 @@ CAPACITY = 997
 LOAD_FACTORS = tuple(step / 10 for step in range(1, 10))
 SVG_OUTPUT = Path(__file__).with_name("linear_probe_comparison.svg")
 PDF_OUTPUT = Path(__file__).with_name("linear_probe_report.pdf")
+CSV_OUTPUT = Path(__file__).with_name("results.csv")
+CSV_COLUMNS = (
+    "load_factor",
+    "chain_successful_measured",
+    "chain_unsuccessful_measured",
+    "linear_successful_measured",
+    "linear_unsuccessful_measured",
+    "chain_successful_theory",
+    "chain_unsuccessful_theory",
+    "linear_successful_theory",
+    "linear_unsuccessful_theory",
+)
 
 
 def _missing_key_for_start(table, start: int) -> str:
@@ -166,12 +179,20 @@ def _write_pdf(lines: list[str]) -> None:
     PDF_OUTPUT.write_bytes(pdf)
 
 
+def _write_csv(results: list[tuple[float, ...]], output: Path = CSV_OUTPUT) -> None:
+    with output.open("w", encoding="utf-8", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(CSV_COLUMNS)
+        writer.writerows(results)
+
+
 def run() -> list[tuple[float, ...]]:
     results = []
     for alpha in LOAD_FACTORS:
         observed = measure_comparison(alpha)
         results.append((alpha, *observed, *_theory(alpha)))
     SVG_OUTPUT.write_text(_svg(results), encoding="utf-8")
+    _write_csv(results)
 
     report_lines = [
         "Hash Table Collision Strategies: Probe Comparison",
@@ -203,7 +224,7 @@ def run() -> list[tuple[float, ...]]:
     print("alpha | chain successful/unsuccessful | linear successful/unsuccessful")
     for row in results:
         print(f"{row[0]:.1f}   | {row[1]:.3f}/{row[2]:.3f}                    | {row[3]:.3f}/{row[4]:.3f}")
-    print(f"\nWrote {SVG_OUTPUT}\nWrote {PDF_OUTPUT}")
+    print(f"\nWrote {SVG_OUTPUT}\nWrote {CSV_OUTPUT}\nWrote {PDF_OUTPUT}")
     return results
 
 
