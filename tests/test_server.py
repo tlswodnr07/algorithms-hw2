@@ -6,14 +6,17 @@ from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
 
 from src.linear_probe_hash_table import LinearProbeHashTable
-from src.server import _table_page, create_handler
+from src.server import create_handler
 from src.shortener import Shortener
 
 
 class ServerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.server = HTTPServer(("127.0.0.1", 0), create_handler(Shortener()))
+        cls.server = HTTPServer(
+            ("127.0.0.1", 0),
+            create_handler(Shortener(), Shortener(LinearProbeHashTable)),
+        )
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
         cls.thread.start()
         cls.base_url = f"http://127.0.0.1:{cls.server.server_port}"
@@ -63,11 +66,27 @@ class ServerTests(unittest.TestCase):
             urlopen(self.base_url + "/not-found")
         self.assertEqual(error.exception.code, 404)
 
-    def test_table_page_shows_linear_probe_path(self):
-        shortener = Shortener(LinearProbeHashTable)
-        shortener.shorten("https://example.com/a")
-        page = _table_page(shortener)
-        self.assertIn("linear probe path", page)
+    def test_table_page_compares_two_colliding_urls(self):
+        urls = ("https://www.yonsei.ac.kr", "https://www.google.com")
+        for url in urls:
+            request = Request(
+                self.base_url + "/shorten",
+                data=urlencode({"url": url}).encode(),
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            with urlopen(request) as response:
+                self.assertEqual(response.status, 200)
+
+        with urlopen(self.base_url + "/table") as response:
+            page = response.read().decode()
+
+        for url in urls:
+            self.assertIn(url, page)
+        self.assertIn("Separate chaining", page)
+        self.assertIn("Linear probing", page)
+        self.assertIn("Initial hash slot: 2", page)
+        self.assertIn("Visited slots: 2 → 3", page)
+        self.assertIn("Final storage slot: 3", page)
         self.assertIn("Horner:", page)
 
 
