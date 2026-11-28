@@ -1,0 +1,79 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 1516 >>
+stream
+BT
+/F1 10 Tf
+50 750 Td
+14 TL
+(Hash Table Collision Strategies: Probe Comparison) Tj
+T*
+(Same Horner hash, key sequence, and capacity \(997\); one measurement per load factor.) Tj
+T*
+(Separate chaining theory: successful 1 + alpha/2; unsuccessful alpha.) Tj
+T*
+(Linear probing theory \(uniform hashing approximation\): successful \(1+1/\(1-alpha\)\)/2;) Tj
+T*
+(unsuccessful \(1+1/\(1-alpha\)^2\)/2. Clustering can increase observed costs.) Tj
+T*
+() Tj
+T*
+(alpha | chain S/U | linear S/U | theory chain S/U | theory linear S/U) Tj
+T*
+(0.1 | 1.07/0.10 | 1.07/1.12 | 1.05/0.10 | 1.06/1.12) Tj
+T*
+(0.2 | 1.09/0.20 | 1.10/1.26 | 1.10/0.20 | 1.12/1.28) Tj
+T*
+(0.3 | 1.14/0.30 | 1.19/1.55 | 1.15/0.30 | 1.21/1.52) Tj
+T*
+(0.4 | 1.19/0.40 | 1.34/1.89 | 1.20/0.40 | 1.33/1.89) Tj
+T*
+(0.5 | 1.25/0.50 | 1.49/2.37 | 1.25/0.50 | 1.50/2.50) Tj
+T*
+(0.6 | 1.30/0.60 | 1.66/3.20 | 1.30/0.60 | 1.75/3.62) Tj
+T*
+(0.7 | 1.36/0.70 | 1.97/5.40 | 1.35/0.70 | 2.17/6.06) Tj
+T*
+(0.8 | 1.40/0.80 | 2.62/9.59 | 1.40/0.80 | 3.00/13.00) Tj
+T*
+(0.9 | 1.45/0.90 | 4.27/31.27 | 1.45/0.90 | 5.50/50.50) Tj
+T*
+() Tj
+T*
+(Interpretation: chaining unsuccessful searches track alpha because they inspect) Tj
+T*
+(the selected bucket only. Linear probing forms contiguous clusters; unsuccessful) Tj
+T*
+(searches rise sharply near full occupancy. The seeded key permutation is) Tj
+T*
+(reproducible; at high loads its clustering and finite capacity differ from the) Tj
+T*
+(uniform-hashing approximation. See linear_probe_comparison.svg for both curves.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1879
+%%EOF
